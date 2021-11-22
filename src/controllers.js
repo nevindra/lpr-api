@@ -2,6 +2,69 @@ const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
 const {getPlateNumber} = require('./send-api')
 const {sendNotificationIn} = require('./notifications')
+const axios = require("axios");
+const fs = require("fs");
+
+exports.getAuth = async (req,res) => {
+    try {
+        const result = await axios.post('https://backend.cloud.nodeflux.io/auth/signatures', {
+            "access_key": process.env.ACCESS_KEY,
+            "secret_key": process.env.SECRET_KEY,
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        fs.writeFile('config.json', JSON.stringify(result.data), (error) => {
+            if (error) {
+                console.log(error);
+            }
+        });
+        return res.status(200).send(result.data)
+    } catch (e) {
+        console.log(e);
+        return res.status(500).send({
+            error: "An error has occured"
+        })
+    }
+}
+
+exports.detectImg = async (req,res) => {
+    const imgUrl = req.file.path
+    try {
+        const plate_number = await getPlateNumber(imgUrl)
+        if (plate_number === "") {
+            return res.status(400).send({
+                status: 400,
+                error: "No plate number detected"
+            })
+        } else {
+            const result = await prisma.car.findOne({
+                where: {
+                    plate_number: plate_number
+                }
+            })
+            if (result) {
+                return res.status(200).send({
+                    status: 200,
+                    car: result
+                })
+            } else {
+                return res.status(400).send({
+                    status: 404,
+                    error: "No car found"
+                })
+            }
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).send({
+            status: 500,
+            error: "An error has occured"
+        })
+    }
+}
 
 exports.parkingIn = async (req,res) => {
     const imgUrl = req.file.path
