@@ -58,7 +58,7 @@ const userRoutes = require('./src/routes');
 
 app.use('/ml', userRoutes);
 
-const main = app.listen(process.env.PORT, err => {
+const main = app.listen(8080,  "0.0.0.0", err => {
     if (err) console.log(err);
     console.log(`⚡ Connected to http://localhost:${PORT} ⚡`)
 });

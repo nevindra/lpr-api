@@ -40,7 +40,7 @@ exports.detectImg = async (req,res) => {
                 error: "No plate number detected"
             })
         } else {
-            const result = await prisma.car.findOne({
+            const result = await prisma.car.findUnique({
                 where: {
                     plate_number: plate_number
                 }
@@ -121,10 +121,10 @@ exports.parkingIn = async (req,res) => {
             await sendNotificationIn(user.device_token, {
                 title: "Parking In",
                 body: "You have entered the parking lot",
-                click_action: "com.dicoding.nextparking.HomeActivity"
+                click_action: "parkirmana://parking.com/parkingin"
             }, {
                 place: "Parking Lot",
-                time: time_in,
+                time_in: time_in,
             })
             return res.status(200).send({
                 message: "Parking In",
@@ -149,7 +149,6 @@ exports.parkingIn = async (req,res) => {
 exports.parkingOut = async (req,res) => {
     const imgUrl = req.file.path
     const plate_number = await getPlateNumber(imgUrl)
-
     try {
         // search user's vehicle
         const vehicle = await prisma.vehicles.findUnique({
@@ -184,7 +183,7 @@ exports.parkingOut = async (req,res) => {
             await sendNotificationIn(user.device_token, {
                 title: "Parking Out",
                 body: "You have left the parking lot",
-                click_action: "com.dicoding.nextparking.ui.payment.PaymentActivity"
+                    click_action: "com.dicoding.nextparking.ui.payment.PaymentActivity"
             }, {
                 place: "Parking Lot",
                 time_in: parking[0].time_in,

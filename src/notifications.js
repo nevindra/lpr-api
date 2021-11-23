@@ -34,6 +34,7 @@ exports.sendNotificationIn = async (device_token, notification, payload) => {
             }
         }
     }
+    console.log(message.notification)
     fcm.send(message, function(err, response){
         if (err) {
             console.log(err)
